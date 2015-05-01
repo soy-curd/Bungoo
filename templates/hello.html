@@ -1,0 +1,43 @@
+<!doctype html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>Hello from Flask</title>
+    <script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.11.1.min.js"></script>
+    <script src="{{ url_for('static', filename='js/jquery.balloon.js') }}"></script>
+
+    <script type="text/javascript">
+
+    $(document).ready(function(){
+        // フォーカスを移動
+        $('textarea').val('');
+        $('textarea').focus().val("{{ text | safe}}");
+        $('textarea').showBalloon({ contents: "{{ snipet | safe}}", position: "right"});
+
+        // キーイベント待ち
+        $(window).keydown(function(e){
+            if (event.shiftKey){
+                // Shit + Enter をチェック
+                if(e.keyCode === 13){
+                    $("form").submit();
+                    return false
+                }
+            }
+            return true;
+        });
+    });
+    </script>
+</head>
+<body>
+    <h1>Bungoo</h1>
+    <p>小説風の文章を作成するツールです</p>
+    <p>Shift+Enterを押すとおすすめの文章が表示されます</p>
+
+    <form method="post" name="words">
+    {% if name %}
+        <textarea name="input_text" id="inp" cols="50" rows="20">{{ text }}</textarea>
+    {% else %}
+        <textarea name="input_text" id="inp" cols="50" rows="20">これはデフォルトの文章です。</textarea>
+    {% endif %}
+        <input type="submit" value="Shift + Enter">
+    </form>
+</body>
