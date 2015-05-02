@@ -8,7 +8,6 @@ import bungoo
 def main():
     make_table()
     insert_data(u"test", u"foo", u"foo", u"foo, foo, foo.")
-    insert_data(u"test2", u"foo", u"foo", u"foo, foo, foo.")
 
     for x in read_data():
         bungoo.pp(x)
