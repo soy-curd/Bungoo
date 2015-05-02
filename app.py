@@ -44,7 +44,7 @@ def login():
 
 def add_p(word_list):
     ptext = ['<p>' + unicode(word) + '</p>' for word in word_list]
-    return reduce(lambda a, x: a + x, ptext)
+    return reduce(lambda a, x: a + x, ptext).replace('\n', '').replace('\r', '')
 
 if __name__ == '__main__':
     app.run(debug=True)

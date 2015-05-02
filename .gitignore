@@ -2,9 +2,7 @@
 
 # my igonre files
 static
-igo
 ipadic
-txt.txt
 .idea
 .DS_Store
 data.db

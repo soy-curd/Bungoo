@@ -6,11 +6,10 @@ reload(sys)
 sys.setdefaultencoding('utf-8')
 
 import urllib
-import MeCab
+import igo
 import random
 import re
 import db
-
 
 def main():
     download()
@@ -49,6 +48,19 @@ def memoize(func):
     return memoized_function
 
 
+def time(func):
+    import functools
+    import datetime
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        start = datetime.datetime.today()
+        result = func(*args, **kwargs)
+        end = datetime.datetime.today()
+        print(func.__name__, end - start)
+        return result
+    return wrapper
+
+
 def download():
     link1 = "http://www.aozora.gr.jp/cards/000119/files/624_14544.html"
     link2 = "http://www.aozora.gr.jp/cards/000160/files/880_23797.html"
@@ -75,11 +87,12 @@ def makeword(inp, src):
     wordlist = wakati(src)
     markov1 = genmarkov1(wordlist)
     markov2 = genmarkov2(wordlist)
-    markov3 = genmarkov3(wordlist)
+    # markov3 = genmarkov3(wordlist)
 
-    return wordchain(wakati(inp), [markov3, markov2, markov1])
+    return wordchain(wakati(inp), [markov2, markov1])
 
 
+@time
 def wordchain(wakatxt, markovs, limit_= 3):
     nextwords = gennextword(wakatxt, markovs, limit=5)
     words = list(set(nextwords))
@@ -164,6 +177,7 @@ def genmarkov2(wordlist):
     return markov
 
 
+@time
 def genmarkov3(wordlist):
     markov = {}
     w1 = ''
@@ -207,11 +221,22 @@ def textdownload(sourceURL):
     return map(str, [title, author, body])
 
 
+@time
 def wakati(text):
-    t = MeCab.Tagger("-Owakati")
-    m = t.parse(text)
-    result = m.rstrip(" \n").split(" ")
-    return result
+    print(len(text))
+    # igoはMecabより実行速度が遅いため
+    # 暫定的に文字数を制限している
+    text = unicode(text)[:2000]
+
+    t = igo.Tagger.Tagger('ipadic')
+    l = t.wakati(text)
+    return [x for x in l]
+
+    # import Mecab
+    # t = MeCab.Tagger("-Owakati")
+    # m = t.parse(text)
+    # result = m.rstrip(" \n").split(" ")
+    # return result
 
 
 def pp(foo):
