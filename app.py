@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from flask import Flask, url_for, render_template, request
+from flask import Flask, url_for, render_template, request, redirect
 import bungoo
 
 app = Flask(__name__)
@@ -9,7 +9,7 @@ app = Flask(__name__)
 
 @app.route('/')
 def hello_world():
-    return "Hello World!"
+    return redirect(url_for('Bungoo'))
 
 
 @app.route('/Bungoo/')
