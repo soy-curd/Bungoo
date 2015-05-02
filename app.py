@@ -12,7 +12,7 @@ def root():
     return redirect(url_for('start'))
 
 
-@app.route('/Bungoo')
+@app.route('/Bungoo/')
 @app.route('/Bungoo/<text>')
 def start(text=None):
     if not text:
