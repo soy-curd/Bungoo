@@ -29,7 +29,8 @@ def login():
     if request.method == 'POST':
         txt = request.form['input_text'].replace('\n', '').replace('\r', '')
         print(txt)
-        words = bungoo.makeword(str(txt))
+        src = bungoo.read()
+        words = bungoo.makeword(str(txt), src)
         if len(words) > 0:
             html_words = add_p(words)
         else:

@@ -9,16 +9,12 @@ import urllib
 import MeCab
 import random
 import re
+import db
 
 
 def main():
-    print(makeword("ここはどこだ"))
-    src = textdownload("http://www.aozora.gr.jp/cards/000119/files/624_14544.html")
-    genword(src)
-    wordlist = wakati(src)
-    markov1 = genmarkov1(wordlist)
-    markov2 = genmarkov2(wordlist)
-    markov3 = genmarkov3(wordlist)
+    download()
+    src = read()
 
     txt = "この日、ついに私は到着した。ここはどこだ。"
     while True:
@@ -36,24 +32,46 @@ def main():
         # markov2 = genmarkov2(wordlist)
         # markov3 = genmarkov3(wordlist)
 
-        ret = wordchain(wakati(txt), [markov3, markov2, markov1])
+        ret = makeword(txt, src)
         pp(ret)
 
+
+def memoize(func):
+    cache = {}
+
+    def memoized_function(*args):
+        try:
+            return cache[args]
+        except KeyError:
+            value = func(*args)
+            cache[args] = value
+            return value
+    return memoized_function
+
+
 def download():
-    src = reduce(lambda a, x: a + x,
-                 map(textdownload, [
-                     "http://www.aozora.gr.jp/cards/000119/files/624_14544.html",
-                     "http://www.aozora.gr.jp/cards/000160/files/880_23797.html",
-                     "http://www.aozora.gr.jp/cards/000160/files/2638_23933.html",
-                     ]))
-    f = open("txt.txt", "w")
-    f.write(src)
+    link1 = "http://www.aozora.gr.jp/cards/000119/files/624_14544.html"
+    link2 = "http://www.aozora.gr.jp/cards/000160/files/880_23797.html"
+    link3 = "http://www.aozora.gr.jp/cards/000160/files/2638_23933.html"
+
+    srcs = map(lambda x: textdownload(x) + [x], [
+         link1,
+         link2,
+         link3,
+         ])
+
+    db.make_table()
+    for x in srcs:
+        db.insert_data(*x)
 
 
-def makeword(inp):
-    f = open("txt.txt")
-    src = f.read()
-    print(src)
+@memoize
+def read():
+    srcs = db.read_data()
+    return reduce(lambda a, x: a + str(x[2]), srcs, "")
+
+
+def makeword(inp, src):
     wordlist = wakati(src)
     markov1 = genmarkov1(wordlist)
     markov2 = genmarkov2(wordlist)
@@ -109,7 +127,7 @@ def genword(txt):
     markov = genmarkov3(wordlist)
     # カウント数は任意
     count = 300
-    sentence =''
+    sentence = ''
     w1, w2, w3 = random.choice(markov.keys())
     for i in xrange(count):
         if markov.has_key((w1, w2, w3)) == True:
@@ -135,28 +153,28 @@ def genmarkov1(wordlist):
 
 def genmarkov2(wordlist):
     markov = {}
-    w1=''
-    w2=''
+    w1 = ''
+    w2 = ''
     for word in wordlist:
         if w1 and w2:
-            if (w1,w2) not in markov:
-                markov[(w1,w2)] = []
-            markov[(w1,w2)].append(word)
-        w1,w2=w2,word
+            if (w1, w2) not in markov:
+                markov[(w1, w2)] = []
+            markov[(w1, w2)].append(word)
+        w1, w2 = w2, word
     return markov
 
 
 def genmarkov3(wordlist):
     markov = {}
-    w1=''
-    w2=''
-    w3=''
+    w1 = ''
+    w2 = ''
+    w3 = ''
     for word in wordlist:
         if w1 and w2 and w3:
-            if (w1,w2,w3) not in markov:
-                markov[(w1,w2,w3)] = []
-            markov[(w1,w2,w3)].append(word)
-        w1,w2,w3=w2,w3,word
+            if (w1, w2, w3) not in markov:
+                markov[(w1, w2, w3)] = []
+            markov[(w1, w2, w3)].append(word)
+        w1, w2, w3 = w2, w3, word
     return markov
 
 
@@ -166,19 +184,27 @@ def textdownload(sourceURL):
 
     # 文字コード変換
     downloaded_text = unicode(downloaded_text,'shift_jis')
-    downloaded_text = re.sub("\n","", downloaded_text)
+
+    # タイトル
+    title = re.search('<h1 class="title">.+?</h1>', downloaded_text).group()
+
+    # 作者
+    author = re.search('<h2 class="author">.+?</h2>', downloaded_text).group()
+
+    # 改行削除
+    downloaded_text = re.sub("\n", "", downloaded_text)
 
     # 本文
-    downloaded_text = re.search('<div class="main_text">.+?</div>',downloaded_text).group()
+    body = re.search('<div class="main_text">.+?</div>', downloaded_text).group()
 
     # ルビ削除
-    downloaded_text = re.sub(u'（</rp>.+?<rp>）',"", downloaded_text)
+    body = re.sub(u'（</rp>.+?<rp>）', "", body)
 
     # タグ削除
-    downloaded_text = re.sub('<.+?>',"", downloaded_text)
-    
+    body = re.sub('<.+?>', "", body)
+
     # str形式で出力
-    return str(downloaded_text)
+    return map(str, [title, author, body])
 
 
 def wakati(text):
@@ -194,6 +220,7 @@ def pp(foo):
             pp(x)
     else:
         print(foo)
+
 
 if __name__ == '__main__':
     main()

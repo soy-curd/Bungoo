@@ -7,6 +7,7 @@ ipadic
 txt.txt
 .idea
 .DS_Store
+data.db
 
 ### Python template
 # Byte-compiled / optimized / DLL files
