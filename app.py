@@ -8,13 +8,13 @@ app = Flask(__name__)
 
 
 @app.route('/')
-def hello_world():
-    return redirect(url_for('Bungoo'))
+def root():
+    return redirect(url_for('start'))
 
 
-@app.route('/Bungoo/')
+@app.route('/Bungoo')
 @app.route('/Bungoo/<text>')
-def hello(text=None):
+def start(text=None):
     if not text:
         text = ">>ここに文章を入力してください。"
 
@@ -23,7 +23,7 @@ def hello(text=None):
 
 
 @app.route('/Bungoo/', methods=['GET', 'POST'])
-def login():
+def text_proc():
     url_for('static', filename='jquery.balloon.min.js')
 
     if request.method == 'POST':
