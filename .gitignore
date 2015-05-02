@@ -1,8 +1,8 @@
 # Created by .ignore support plugin (hsz.mobi)
 
 # my igonre files
-static
-ipadic
+# ipadic
+# static
 .idea
 .DS_Store
 data.db
