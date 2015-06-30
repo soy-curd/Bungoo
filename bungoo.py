@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+#todo 高速化する
+#todo スタート時に落ちるため直す
+
 import sys
 
 # setdefaultencodingするためにはrelodが必要
