@@ -42,9 +42,10 @@ def text_proc():
         return render_template('hello.html', text='Please input any text.')
 
 
+# pタグを追加する
 def add_p(word_list):
     ptext = ['<p>' + unicode(word) + '</p>' for word in word_list]
     return reduce(lambda a, x: a + x, ptext).replace('\n', '').replace('\r', '')
 
 if __name__ == '__main__':
-    app.run()
+    app.run(port=5001, debug=True)

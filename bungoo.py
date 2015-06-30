@@ -2,11 +2,12 @@
 # -*- coding: utf-8 -*-
 
 import sys
+
+# setdefaultencodingするためにはrelodが必要
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
 import urllib
-import igo
 import random
 import re
 import db
@@ -35,6 +36,7 @@ def main():
         pp(ret)
 
 
+# メモ化関数
 def memoize(func):
     cache = {}
 
@@ -48,6 +50,7 @@ def memoize(func):
     return memoized_function
 
 
+# 時間計測関数
 def time(func):
     import functools
     import datetime
@@ -87,7 +90,6 @@ def makeword(inp, src):
     wordlist = wakati(src)
     markov1 = genmarkov1(wordlist)
     markov2 = genmarkov2(wordlist)
-    # markov3 = genmarkov3(wordlist)
 
     return wordchain(wakati(inp), [markov2, markov1])
 
@@ -135,11 +137,9 @@ def gennextword(txt, markovs, limit=3):
                     raise StopIteration
 
 
-def genword(txt):
+def genword(txt, count=300):
     wordlist = wakati(txt)
     markov = genmarkov3(wordlist)
-    # カウント数は任意
-    count = 300
     sentence = ''
     w1, w2, w3 = random.choice(markov.keys())
     for i in xrange(count):
@@ -221,22 +221,16 @@ def textdownload(sourceURL):
     return map(str, [title, author, body])
 
 
-@time
+@memoize
 def wakati(text):
-    print(len(text))
-    # igoはMecabより実行速度が遅いため
-    # 暫定的に文字数を制限している
-    text = unicode(text)[:2000]
+    import igo
+
+    print(u"text size: ", len(text))
+    text = unicode(text)
 
     t = igo.Tagger.Tagger('ipadic')
-    l = t.wakati(text)
-    return [x for x in l]
 
-    # import Mecab
-    # t = MeCab.Tagger("-Owakati")
-    # m = t.parse(text)
-    # result = m.rstrip(" \n").split(" ")
-    # return result
+    return t.wakati(text)
 
 
 def pp(foo):
