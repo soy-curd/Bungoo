@@ -19,7 +19,7 @@ def main():
     download()
     src = read()
 
-    txt = "この日、ついに私は到着した。ここはどこだ。"
+    txt = "この文章はここからはじまる。"
     while True:
         print(txt)
         sys.stdout.write(">>")
@@ -107,7 +107,6 @@ def wordchain(wakatxt, markovs, limit_= 3):
         buf = [cat([word] + list(gennextword(wakatxt + [word], markovs, limit=1))) for word in words]
         words = buf
 
-    # なぜか連結されない？
     for i in range(limit_):
         buf = []
         for word in words:
