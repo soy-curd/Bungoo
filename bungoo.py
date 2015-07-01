@@ -29,12 +29,6 @@ def main():
 
         txt = txt + inp
 
-        # 自分の文章を候補に加える
-        # wordlist = wordlist + wakati(inp)
-        # markov1 = genmarkov1(wordlist)
-        # markov2 = genmarkov2(wordlist)
-        # markov3 = genmarkov3(wordlist)
-
         ret = makeword(txt, src)
         pp(ret)
 
@@ -90,11 +84,11 @@ def read():
 
 
 def makeword(inp, src):
-    wordlist = wakati(src)
+    wordlist = wakati_multi(src)
     markov1 = genmarkov1(wordlist)
     markov2 = genmarkov2(wordlist)
 
-    return wordchain(wakati(inp), [markov2, markov1])
+    return wordchain(wakati_multi(inp), [markov2, markov1])
 
 
 @time
@@ -223,16 +217,36 @@ def textdownload(sourceURL):
     return map(str, [title, author, body])
 
 
-@memoize
-def wakati(text):
+# 分かち書き関数
+# 別関数にすることでmultiprocessingのPicklingErrorを回避
+def wakati_sub(text):
     import igo
-
-    print(u"text size: ", len(text))
-    text = unicode(text)
 
     t = igo.Tagger.Tagger('ipadic')
 
     return t.wakati(text)
+
+
+def split_list(xlist, num):
+    splited_list = []
+    for x in range(num):
+        buf = xlist[(x - 1) * len(xlist)/num : x * len(xlist)/num]
+        splited_list.append(buf)
+
+    return splited_list
+
+
+@memoize
+def wakati_multi(text, process=4):
+    from multiprocessing import Pool
+
+    print(u"text size: ", len(text))
+    p = Pool(process)
+    text = unicode(text)
+    splited_text = split_list(text, process)
+    print(len(splited_text))
+
+    return cat(p.map(wakati_sub, splited_text))
 
 
 def pp(foo):
