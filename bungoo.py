@@ -68,8 +68,8 @@ def download():
 
     srcs = map(lambda x: textdownload(x) + [x], [
          link1,
-         link2,
-         link3,
+         # link2,
+         # link3,
          ])
 
     db.make_table()
@@ -88,7 +88,7 @@ def makeword(inp, src):
     markov1 = genmarkov1(wordlist)
     markov2 = genmarkov2(wordlist)
 
-    return wordchain(wakati_multi(inp), [markov2, markov1])
+    return wordchain(wakati(inp), [markov2, markov1])
 
 
 @time
@@ -215,6 +215,18 @@ def textdownload(sourceURL):
 
     # str形式で出力
     return map(str, [title, author, body])
+
+
+@memoize
+def wakati(text):
+    import igo
+
+    print(u"text size: ", len(text))
+    text = unicode(text)
+
+    t = igo.Tagger.Tagger('ipadic')
+
+    return t.wakati(text)
 
 
 # 分かち書き関数
