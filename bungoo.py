@@ -68,8 +68,8 @@ def download():
 
     srcs = map(lambda x: textdownload(x) + [x], [
          link1,
-         # link2,
-         # link3,
+         link2,
+         link3,
          ])
 
     db.make_table()
