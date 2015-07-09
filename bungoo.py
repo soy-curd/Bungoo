@@ -3,6 +3,7 @@
 
 #todo 高速化する
 #todo スタート時に落ちるため直す
+#todo 全自動ボタン
 
 import sys
 
@@ -32,6 +33,26 @@ def main():
         ret = makeword(txt, src)
         pp(ret)
 
+
+def auto():
+    words=[u"私は",u"彼に",u"あなたを",u"僕が",u"今日、",u"いつか",u"その日",u"ある日",u"昔"]
+    auto_txt = random.choice(words)
+    MAX_TEXTSIZE = 500
+
+    while(len(auto_txt) < MAX_TEXTSIZE):
+        src = read()
+        words = makeword(str(auto_txt), src)
+
+        if len(words) == 0:
+            break
+
+        auto_txt = auto_txt + random.choice(words)
+
+        # 最後が句点の場合終了
+        if auto_txt[-1] == u"。":
+            break
+
+    return auto_txt
 
 # メモ化関数
 def memoize(func):

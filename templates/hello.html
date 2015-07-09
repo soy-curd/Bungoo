@@ -4,6 +4,9 @@
     <title>Bungoo</title>
     <script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.11.1.min.js"></script>
     <script src="{{ url_for('static', filename='js/jquery.balloon.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+    <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
+
 
     <script type="text/javascript">
 
@@ -25,19 +28,41 @@
             return true;
         });
     });
+
+        function hoge(){
+            console.log("hoge!");
+        }
     </script>
 </head>
 <body>
-    <h1>Bungoo</h1>
-    <p>小説風の文章を作成するツールです</p>
-    <p>Shift+Enterを押すとおすすめの文章が表示されます</p>
+    <div class="container">
+        <div  class="col-md-8 col-xs-12">
 
-    <form method="post" name="words">
-    {% if name %}
-        <textarea name="input_text" id="inp" cols="50" rows="20">{{ text }}</textarea>
-    {% else %}
-        <textarea name="input_text" id="inp" cols="50" rows="20">これはデフォルトの文章です。</textarea>
-    {% endif %}
-        <input type="submit" value="Shift + Enter">
-    </form>
+            <div class=""row>
+                <h1>Bungoo</h1>
+                <p>小説風の文章を作成するツールです</p>
+                <p>Shift+Enterを押すとおすすめの文章が表示されます</p>
+                <h5>※全自動ボタンを実装しました！</h5>
+
+                <form method="post" name="words">
+                {% if name %}
+                    <textarea name="input_text" id="inp" cols="50" rows="20">{{ text }}</textarea>
+                {% else %}
+                    <textarea name="input_text" id="inp" cols="50" rows="20">これはデフォルトの文章です。</textarea>
+                {% endif %}
+                    <input type="submit" value="Shift + Enter">
+                </form>
+            </div>
+
+            <div class="row">
+                <a href="{{ url_for('auto_write')}}"><button type="button" class="btn btn-default" onClick="hoge();">AUTO!</button></a>
+            </div>
+
+        </div>
+    </div>
+    <div class="container">
+        <div id="footer">
+            <a href="http://soy-curd.com">soycurdあっとgmail.com</a>
+        </div>
+    </div>
 </body>
