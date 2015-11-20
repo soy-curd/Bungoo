@@ -4,6 +4,7 @@
 .idea
 .DS_Store
 data.db
+sql.py
 ENV/
 
 ### Python template

@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-#todo 高速化する
-#todo スタート時に落ちるため直す
-#todo 全自動ボタン
+#todo 高速化する -> DBにバイグラムを入れておけば良い気がする。pickelする???
+#todo スタート時に落ちるため直す -> 済
+#todo 全自動ボタン -> 済
 
 import sys
 
