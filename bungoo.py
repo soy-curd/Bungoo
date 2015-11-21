@@ -83,9 +83,9 @@ def time(func):
 
 
 def download():
-    link1 = "http://www.aozora.gr.jp/cards/000119/files/624_14544.html"
-    link2 = "http://www.aozora.gr.jp/cards/000160/files/880_23797.html"
-    link3 = "http://www.aozora.gr.jp/cards/000160/files/2638_23933.html"
+    link1 = "http://www.aozora.gr.jp/cards/000035/files/236_19996.html"
+    link2 = "http://www.aozora.gr.jp/cards/000035/files/1572_19910.html"
+    link3 = "http://www.aozora.gr.jp/cards/000035/files/1578_44923.html"
 
     srcs = map(lambda x: textdownload(x) + [x], [
          link1,
