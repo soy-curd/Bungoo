@@ -2,6 +2,8 @@
 
 # my igonre files
 .idea
+*.iml
+*.bak
 .DS_Store
 data.db
 sql.py

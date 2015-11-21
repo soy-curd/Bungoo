@@ -1,12 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from flask import Flask, url_for, render_template, request, redirect
+from flask import url_for, render_template, request, redirect
 import bungoo
-import random
+from functools import reduce
+import db_psql
 
-app = Flask(__name__)
+app = db_psql.app
 
+MARKOVS = bungoo.make_markovs(db_psql.read_data())
 
 @app.route('/')
 def root():
@@ -17,29 +19,22 @@ def root():
 @app.route('/Bungoo/<text>')
 def start(text=None):
     if not text:
-        text = ">>ここに文章を入力してください。"
+        text = ">>"
 
     bungoo.download()
     return render_template('hello.html', text=text)
 
 @app.route('/Bungoo/auto')
 def auto_write():
-    text = bungoo.auto()
+    text = bungoo.auto(MARKOVS)
     return render_template('hello.html', text=text)
 
-
-@app.route('/Bungoo/', methods=['GET', 'POST'])
+@app.route('/Bungoo/', methods=['POST'])
 def text_proc():
-    url_for('static', filename='jquery.balloon.min.js')
 
-    if request.method == 'POST':
-        txt = request.form['input_text'].replace('\n', '').replace('\r', '')
-    else:
-        return render_template('hello.html', text='Please input any text.')
-
+    txt = request.form['input_text'].replace('\n', '').replace('\r', '')
     print(txt)
-    src = bungoo.read()
-    words = bungoo.makeword(str(txt), src)
+    words = bungoo.makeword_from_obj(txt, MARKOVS)
     if len(words) > 0:
         html_words = add_p(words)
     else:

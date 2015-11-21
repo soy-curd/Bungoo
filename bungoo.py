@@ -7,15 +7,11 @@
 
 import sys
 from functools import reduce
-
-# setdefaultencodingするためにはrelodが必要
-reload(sys)
-sys.setdefaultencoding('utf-8')
-
 import urllib.request, urllib.parse, urllib.error
 import random
 import re
 import db
+import pickle
 
 def main():
     download()
@@ -35,14 +31,14 @@ def main():
         pp(ret)
 
 
-def auto():
+def auto(markovs):
     words=["私は","彼に","あなたを","僕が","今日、","いつか","その日","ある日","昔"]
     auto_txt = random.choice(words)
     MAX_TEXTSIZE = 500
 
     while(len(auto_txt) < MAX_TEXTSIZE):
         src = read()
-        words = makeword(str(auto_txt), src)
+        words = makeword_from_obj(str(auto_txt), markovs)
 
         if len(words) == 0:
             break
@@ -112,9 +108,24 @@ def makeword(inp, src):
 
     return wordchain(wakati(inp), [markov2, markov1])
 
+def make_markovs(novels):
+
+    markov1 = {}
+    markov2 = {}
+    markov3 = {}
+    for novel in novels:
+        markov1.update(pickle.loads(novel.markov1))
+        markov2.update(pickle.loads(novel.markov2))
+        markov3.update(pickle.loads(novel.markov3))
+
+    return markov1, markov2, markov3
+
+def makeword_from_obj(inp, markovs):
+    return wordchain(wakati(inp), markovs)
+
 
 @time
-def wordchain(wakatxt, markovs, limit_= 3):
+def wordchain(wakatxt, markovs, limit_=3):
     nextwords = gennextword(wakatxt, markovs, limit=5)
     words = list(set(nextwords))
 
@@ -195,7 +206,6 @@ def genmarkov2(wordlist):
     return markov
 
 
-@time
 def genmarkov3(wordlist):
     markov = {}
     w1 = ''
@@ -261,10 +271,17 @@ def wakati_sub(text):
     return t.wakati(text)
 
 
-def split_list(xlist, num):
+def split_list(text, num):
+    """
+
+    :param text:
+    :param num:
+    :return:
+    """
     splited_list = []
+
     for x in range(num):
-        buf = xlist[(x - 1) * len(xlist)/num : x * len(xlist)/num]
+        buf = text[(x - 1) * len(text)//num: x * len(text)//num]
         splited_list.append(buf)
 
     return splited_list
@@ -274,11 +291,9 @@ def split_list(xlist, num):
 def wakati_multi(text, process=4):
     from multiprocessing import Pool
 
-    print(("text size: ", len(text)))
     p = Pool(process)
     text = str(text)
     splited_text = split_list(text, process)
-    print((len(splited_text)))
 
     return cat(p.map(wakati_sub, splited_text))
 

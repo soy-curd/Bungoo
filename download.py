@@ -6,8 +6,12 @@ from urllib.parse import urljoin
 from bs4 import BeautifulSoup
 import time
 import os.path
+from bungoo import textdownload, wakati_sub, genmarkov1, genmarkov2, genmarkov3
 
-class Novel():
+import db_psql
+import pickle
+
+class NovelLink(object):
     def __init__(self, title, link):
         self.title = title
         self.link = link
@@ -18,13 +22,43 @@ class Novel():
 
 
 def main():
-    make_binary()
+    make_obj()
 
 
-def make_binary():
+def make_obj():
     urls = read_url_from_txt('dazai.txt')
-    for x in urls:
-        print(x)
+    print(len(urls))
+    for url in urls:
+
+        # テキストのダウンロード
+        text = textdownload(url)
+
+        # 値の作成
+        wordlist = wakati_sub(text[2])
+        markov1 = genmarkov1(wordlist)
+        markov2 = genmarkov2(wordlist)
+        markov3 = genmarkov3(wordlist)
+
+        obj = db_psql.Novel(
+            title=text[0],
+            link=url,
+            author=text[1],
+            body=text[2],
+            markov1=pickle.dumps(markov1),
+            markov2=pickle.dumps(markov2),
+            markov3=pickle.dumps(markov3)
+        )
+
+        # dbにインポート
+        db_psql.insert_data(obj)
+
+        # クローリングのため一応sleep
+        print(text[0])
+        time.sleep(1)
+
+    # dbから値の読み出し
+    objs = db_psql.read_data()
+    return objs
 
 
 def read_url_from_txt(filename):
@@ -49,7 +83,7 @@ def download_dazai():
 
         link = x.a['href']
         title = x.text
-        novels.append(Novel(title, link))
+        novels.append(NovelLink(title, link))
 
     for novel in novels:
         url = hostname + novel.link[2:]
@@ -62,15 +96,12 @@ def download_dazai():
             link = unit.find('a')['href']
             _, ext = os.path.splitext(link)
             print(unit, link, _, ext)
-            # import pdb
-            # pdb.set_trace()
             if ext == '.html':
                 novel.set(urljoin(url, link))
                 break
 
         # クローリングのため一応スリープ
         time.sleep(0.5)
-
 
     with open('dazai.txt', 'w') as f:
         for x in novels:
