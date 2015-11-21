@@ -7,7 +7,7 @@ import bungoo
 
 def main():
     make_table()
-    insert_data(u"test", u"foo", u"foo", u"foo, foo, foo.")
+    insert_data("test", "foo", "foo", "foo, foo, foo.")
 
     for x in read_data():
         bungoo.pp(x)
@@ -15,7 +15,7 @@ def main():
 
 def make_table():
     con = sqlite3.connect("data.db")
-    sql = u"""
+    sql = """
     create table novel (
         title TEXT UNIQUE,
         link TEXT,
@@ -36,7 +36,7 @@ def make_table():
 
 def insert_data(title, author, body, link):
     con = sqlite3.connect("data.db")
-    sql = u"insert or replace into novel values ('" + title + u"', '" + author + u"', '" + body + u"', '" + link + u"')"
+    sql = "insert or replace into novel values ('" + title + "', '" + author + "', '" + body + "', '" + link + "')"
     con.execute(sql)
     con.commit()
     con.close()
@@ -45,7 +45,7 @@ def insert_data(title, author, body, link):
 def read_data():
     con = sqlite3.connect("data.db")
     c = con.cursor()
-    c.execute(u"select * from novel")
+    c.execute("select * from novel")
     data = [x for x in c.fetchall()]
     con.close()
 

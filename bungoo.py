@@ -6,12 +6,13 @@
 #todo 全自動ボタン -> 済
 
 import sys
+from functools import reduce
 
 # setdefaultencodingするためにはrelodが必要
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
-import urllib
+import urllib.request, urllib.parse, urllib.error
 import random
 import re
 import db
@@ -24,7 +25,7 @@ def main():
     while True:
         print(txt)
         sys.stdout.write(">>")
-        inp = raw_input()
+        inp = input()
         if inp == 'q':
             break
 
@@ -35,7 +36,7 @@ def main():
 
 
 def auto():
-    words=[u"私は",u"彼に",u"あなたを",u"僕が",u"今日、",u"いつか",u"その日",u"ある日",u"昔"]
+    words=["私は","彼に","あなたを","僕が","今日、","いつか","その日","ある日","昔"]
     auto_txt = random.choice(words)
     MAX_TEXTSIZE = 500
 
@@ -49,7 +50,7 @@ def auto():
         auto_txt = auto_txt + random.choice(words)
 
         # 最後が句点の場合終了
-        if auto_txt[-1] == u"。":
+        if auto_txt[-1] == "。":
             break
 
     return auto_txt
@@ -77,7 +78,7 @@ def time(func):
         start = datetime.datetime.today()
         result = func(*args, **kwargs)
         end = datetime.datetime.today()
-        print(func.__name__, end - start)
+        print((func.__name__, end - start))
         return result
     return wrapper
 
@@ -87,11 +88,11 @@ def download():
     link2 = "http://www.aozora.gr.jp/cards/000035/files/1572_19910.html"
     link3 = "http://www.aozora.gr.jp/cards/000035/files/1578_44923.html"
 
-    srcs = map(lambda x: textdownload(x) + [x], [
+    srcs = [textdownload(x) + [x] for x in [
          link1,
          link2,
          link3,
-         ])
+         ]]
 
     db.make_table()
     for x in srcs:
@@ -144,7 +145,7 @@ def gennextword(txt, markovs, limit=3):
     # 単語の後ろから探索
     cnt = 0
     for markov in markovs:
-        i = len(markov.keys()[0])
+        i = len(list(markov.keys())[0])
         suggest = markov.get(tuple(txt[-i:]))
         if suggest:
             for x in suggest:
@@ -158,15 +159,15 @@ def genword(txt, count=300):
     wordlist = wakati(txt)
     markov = genmarkov3(wordlist)
     sentence = ''
-    w1, w2, w3 = random.choice(markov.keys())
-    for i in xrange(count):
-        if markov.has_key((w1, w2, w3)) == True:
+    w1, w2, w3 = random.choice(list(markov.keys()))
+    for i in range(count):
+        if ((w1, w2, w3) in markov) == True:
             tmp = random.choice(markov[(w1, w2, w3)])
             sentence += tmp
         w1, w2, w3 = w2, w3, tmp
 
     print(sentence)
-    print(len(sentence))
+    print((len(sentence)))
 
 
 def genmarkov1(wordlist):
@@ -210,11 +211,11 @@ def genmarkov3(wordlist):
 
 
 def textdownload(sourceURL):
-    res = urllib.urlopen(sourceURL)
+    res = urllib.request.urlopen(sourceURL)
     downloaded_text = res.read()
 
     # 文字コード変換
-    downloaded_text = unicode(downloaded_text,'shift_jis')
+    downloaded_text = str(downloaded_text,'shift_jis')
 
     # タイトル
     title = re.search('<h1 class="title">.+?</h1>', downloaded_text).group()
@@ -229,21 +230,21 @@ def textdownload(sourceURL):
     body = re.search('<div class="main_text">.+?</div>', downloaded_text).group()
 
     # ルビ削除
-    body = re.sub(u'（</rp>.+?<rp>）', "", body)
+    body = re.sub('（</rp>.+?<rp>）', "", body)
 
     # タグ削除
     body = re.sub('<.+?>', "", body)
 
     # str形式で出力
-    return map(str, [title, author, body])
+    return list(map(str, [title, author, body]))
 
 
 @memoize
 def wakati(text):
     import igo
 
-    print(u"text size: ", len(text))
-    text = unicode(text)
+    print(("text size: ", len(text)))
+    text = str(text)
 
     t = igo.Tagger.Tagger('ipadic')
 
@@ -273,11 +274,11 @@ def split_list(xlist, num):
 def wakati_multi(text, process=4):
     from multiprocessing import Pool
 
-    print(u"text size: ", len(text))
+    print(("text size: ", len(text)))
     p = Pool(process)
-    text = unicode(text)
+    text = str(text)
     splited_text = split_list(text, process)
-    print(len(splited_text))
+    print((len(splited_text)))
 
     return cat(p.map(wakati_sub, splited_text))
 
