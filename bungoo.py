@@ -118,7 +118,7 @@ def make_markovs(novels):
         markov2.update(pickle.loads(novel.markov2))
         markov3.update(pickle.loads(novel.markov3))
 
-    return markov1, markov2, markov3
+    return markov3, markov2, markov1
 
 def makeword_from_obj(inp, markovs):
     return wordchain(wakati(inp), markovs)
@@ -126,10 +126,23 @@ def makeword_from_obj(inp, markovs):
 
 @time
 def wordchain(wakatxt, markovs, limit_=3):
-    nextwords = gennextword(wakatxt, markovs, limit=5)
-    words = list(set(nextwords))
+    """
 
-    # 言葉を連結していく
+    :param wakatxt list[str]:入力された文字列を分かち書きしたもの
+    :param markovs list[dict{tuple:list}]:
+    (私,は):辛い　のような辞書を持ったもの。タプルの大きさによって異なるオブジェクトを持っている。
+    :param limit_:
+    :return:
+    """
+
+    nextwords = gennextword(wakatxt, markovs, limit=20)
+    words = list(set(nextwords))
+    random.shuffle(words)
+    if len(words) > 10:
+        words = words[:10]
+
+    # ["お", "絵", "ド"]などが返ってくるので、
+    # それらの単語に繋がる単語を連結する
     for i in range(limit_):
         buf = [cat([word] + list(gennextword(wakatxt + [word], markovs, limit=1))) for word in words]
         words = buf
@@ -152,12 +165,27 @@ def cat(strlist):
     return reduce(lambda a, x: a + x, strlist)
 
 
-def gennextword(txt, markovs, limit=3):
+def gennextword(txt, markovs, limit=10):
+    """
+
+    :param txt list[str:入力された文字列を分かち書きしたもの
+    :param markovs:
+    :param limit:
+    :return:
+    """
+
     # 単語の後ろから探索
     cnt = 0
     for markov in markovs:
+        # iはタプルのサイズ
+        # ("私", ) -> 1
+        # ("私", "は") -> 2
         i = len(list(markov.keys())[0])
+
+        # タプルをキーにして単語のリストを取得
         suggest = markov.get(tuple(txt[-i:]))
+
+        # limit_個返す
         if suggest:
             for x in suggest:
                 yield x

@@ -34,7 +34,7 @@ def make_obj():
         text = textdownload(url)
 
         # 値の作成
-        wordlist = wakati_sub(text[2])
+        wordlist = wakati_sub(text[2].replace("　", ""))
         markov1 = genmarkov1(wordlist)
         markov2 = genmarkov2(wordlist)
         markov3 = genmarkov3(wordlist)
