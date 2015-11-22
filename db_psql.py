@@ -52,16 +52,49 @@ def main():
 
 
 def insert_data(novel):
-    try:
-        db.create_all()
-        db.session.add(novel)
+    db.create_all()
+    db.session.add(novel)
+    db.session.commit()
+
+    # try:
+    #     db.create_all()
+    #     db.session.add(novel)
+    #     db.session.commit()
+    # except:
+    #     print("the object {0} already exists".format(novel.title))
+
+def update_data(pre_author, post_author):
+    novels = Novel.query.filter(
+        Novel.author==pre_author
+    ).all()
+
+    for x in novels:
+        x.author = post_author
         db.session.commit()
-    except:
-        print("the object {0} already exists".format(novel.title))
+
+def remove_tag(author):
+    from bs4 import BeautifulSoup
+
+    novels = Novel.query.filter(
+        Novel.author==author
+    ).all()
+
+    for x in novels:
+        soup = BeautifulSoup(x.title)
+        h1 = soup.find('h1', {'class': 'title'})
+        if h1:
+            x.title = h1.text
+
+        db.session.commit()
 
 
 def read_data():
     novels = Novel.query.all()
+    return novels
+
+
+def read_novel(author_name):
+    novels = Novel.query.filter(Novel.author==author_name).all()
     return novels
 
 if __name__ == '__main__':

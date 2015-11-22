@@ -22,12 +22,24 @@ class NovelLink(object):
 
 
 def main():
-    make_obj()
+    author_name = "芥川龍之介"
+    # novels = db_psql.read_novel(author_name)
+    # for x in novels:
+    #     print(x)
+    #     print(x.author)
+    db_psql.remove_tag("太宰治")
 
 
-def make_obj():
-    urls = read_url_from_txt('dazai.txt')
+def fix_author():
+    pre_author = """<h2 class="author">太宰治</h2>"""
+    post_author = "太宰治"
+    db_psql.update_data(pre_author, post_author)
+
+
+def make_obj(filename):
+    urls = read_url_from_txt(filename)
     print(len(urls))
+
     for url in urls:
 
         # テキストのダウンロード
@@ -70,6 +82,16 @@ def read_url_from_txt(filename):
 
 def download_dazai():
     url = 'http://www.aozora.gr.jp/index_pages/person35.html'
+    filename = 'dazai.txt'
+    download_novel(url, filename)
+
+def download_akutagawa():
+    url = 'http://www.aozora.gr.jp/index_pages/person879.html'
+    filename = 'akutagawa.txt'
+    download_novel(url, filename)
+    return filename
+
+def download_novel(url, filename):
     hostname = 'http://www.aozora.gr.jp'
 
     html = urllib.request.urlopen(url).read()
@@ -103,7 +125,7 @@ def download_dazai():
         # クローリングのため一応スリープ
         time.sleep(0.5)
 
-    with open('dazai.txt', 'w') as f:
+    with open(filename, 'w') as f:
         for x in novels:
             if x.download_link:
                 f.write(x.download_link + '\n')

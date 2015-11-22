@@ -12,6 +12,9 @@ import random
 import re
 import db
 import pickle
+from bs4 import BeautifulSoup
+import math
+
 
 def main():
     download()
@@ -30,6 +33,72 @@ def main():
         ret = makeword(txt, src)
         pp(ret)
 
+
+def tfidf():
+    tfs = list(map(make_tfs, ["太宰治", "芥川龍之介", "堀辰雄"]))
+    dazai_tf = tfs[0]
+
+    idf = _idf(tfs)
+    dazai_tf_idf = _tfidf(dazai_tf, idf)
+
+    for k, v in sorted(dazai_tf_idf.items(), key=lambda x: x[1])[:30]:
+        print(k, v)
+
+    return dazai_tf_idf
+
+def make_tfs(author):
+    import db_psql
+    novels = db_psql.read_novel(author)
+    words = fetch_words(novels)
+    words_all = reduce(lambda a, x: a + list(x.words), words, [])
+    tf = _tf(words_all)
+
+    return tf
+
+def _tfidf(tf, idf):
+    return {k: v * idf[k] for k, v in tf.items()}
+
+def _idf(tfs):
+    doc_cnt = len(tfs)
+    words = set(reduce(lambda a, x: a + list(x.keys()), tfs, []))
+    idf = {}
+    for tf in tfs:
+        for word in words:
+            if tf.get(word):
+                if idf.get(word):
+                    idf[word] = idf[word] + 1
+                else:
+                    idf[word] = 1
+
+    return {k: math.log(doc_cnt/v) for k, v in idf.items()}
+
+
+def _tf(words):
+    word_size = len(words)
+    tf = {}
+    for word in words:
+        if tf.get(word):
+            tf[word] = tf[word] + 1
+        else:
+            tf[word] = 1
+
+    return {k: v/word_size for k, v in tf.items()}
+
+class NovelWords(object):
+    def __init__(self, title, author, words):
+        self.title = title
+        self.author = author
+        self.words = words
+
+def fetch_words(novels):
+    result = []
+    for novel in novels:
+        markov1 = pickle.loads(novel.markov1)
+        words = map(lambda x: x[0], markov1.keys())
+        novel_words = NovelWords(novel.title, novel.author, words)
+        result.append(novel_words)
+
+    return result
 
 def auto(markovs):
     words=["私は","彼に","あなたを","僕が","今日、","いつか","その日","ある日","昔"]
@@ -249,17 +318,20 @@ def genmarkov3(wordlist):
 
 
 def textdownload(sourceURL):
+
     res = urllib.request.urlopen(sourceURL)
     downloaded_text = res.read()
 
     # 文字コード変換
     downloaded_text = str(downloaded_text,'shift_jis')
 
+    soup = BeautifulSoup(downloaded_text)
+
     # タイトル
-    title = re.search('<h1 class="title">.+?</h1>', downloaded_text).group()
+    title = soup.find('h1', {'class': 'title'}).text
 
     # 作者
-    author = re.search('<h2 class="author">.+?</h2>', downloaded_text).group()
+    author = soup.find('h2', {'class': 'author'}).text
 
     # 改行削除
     downloaded_text = re.sub("\n", "", downloaded_text)
