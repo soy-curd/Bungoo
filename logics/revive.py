@@ -1,22 +1,18 @@
-from logics.collect_data import save_data, WordType
+from logics.collect_data import collect_data, WordType, dump_data, load_data
 from pymongo import MongoClient
 import re
 import functools
 import random
+import os
 
 
-def get_sentences(_id):
+def get_sentences(words):
     stop_words = ["。"]
-
-    mongo_client = MongoClient('localhost:27017')
-    db_connect = mongo_client["bungoo"]
-    c = db_connect.bungoo
-    novel = c.find_one({"_id": _id})
 
     # "。"で区切る
     sentences = []
     sentence = []
-    for word in novel["wakati_text"]:
+    for word in words:
         if word["surface"] in stop_words:
             if sentence:
                 sentences.append(sentence + [word])
@@ -28,35 +24,39 @@ def get_sentences(_id):
 
 
 def main(save=False):
-    # 異世界ファンタジーラノベをダウンロード -> 済
+    # 異世界ファンタジーラノベをダウンロード
     # 太宰治をダウンロード
-    # 文章を生成
     if save:
-        save_data()
+        collect_data()
 
+    # 文章を生成
     # MongoDB接続
     mongo_client = MongoClient("localhost:27017")
     # データベース選択
     db_connect = mongo_client["bungoo"]
 
     c = db_connect.bungoo
+
+    # 太宰
     novel = c.find_one({"title": re.compile(r"人間失格")})
-    sentences = get_sentences(novel["_id"])
+    sentences = get_sentences(novel["wakati_text"])
     _sentences = [concat(sentence, lambda x: x["surface"]) for sentence in sentences]
     buf = [(i, _s) for i, _s in enumerate(_sentences) if "恥" in _s]
     target = concat(sentences[47:53], init=[])
     print(sentences)
-    new_words = [vars(WordType("ナウイ", [], "", "")),
-                 vars(WordType("ほげ", [], "", "")),
-                 vars(WordType("ふが", [], "", ""))]
+
+    # カクヨム
+    novels = c.find({"url": re.compile(r"kakuyomu")})
+    file_name = "new_words.dat"
+    if os.path.exists(file_name):
+        new_words = load_data(file_name)
+    else:
+        new_words = concat([novel["wakati_text"] for novel in novels], init=[])
+        dump_data(new_words, file_name)
+
+    print(len(new_words))
     ret = replace(target, new_words)
     print(concat(ret, lambda x: x["surface"]))
-
-
-    # cursor = c.find()
-    # for novel in cursor:
-    #     print(novel["title"])
-    #     _id = novel["_id"]
 
 
 def concat(sentence, func=lambda x: x, init=""):

@@ -240,7 +240,7 @@ def dump_data(data, filename):
         pickle.dump(data, f)
 
 
-def save_data():
+def collect_data():
     # MongoDB接続
     mongo_client = MongoClient("localhost:27017")
     # データベース選択
@@ -297,4 +297,4 @@ def save_data():
 
 
 if __name__ == "__main__":
-    save_data()
+    collect_data()
