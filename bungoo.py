@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-#todo 高速化する -> DBにバイグラムを入れておけば良い気がする。pickelする???
-#todo スタート時に落ちるため直す -> 済
-#todo 全自動ボタン -> 済
+# todo 高速化する -> DBにバイグラムを入れておけば良い気がする。pickelする???
+# todo スタート時に落ちるため直す -> 済
+# todo 全自動ボタン -> 済
 
 import sys
 from functools import reduce
@@ -46,6 +46,7 @@ def tfidf():
 
     return dazai_tf_idf
 
+
 def make_tfs(author):
     import db_psql
     novels = db_psql.read_novel(author)
@@ -55,8 +56,10 @@ def make_tfs(author):
 
     return tf
 
+
 def _tfidf(tf, idf):
     return {k: v * idf[k] for k, v in tf.items()}
+
 
 def _idf(tfs):
     doc_cnt = len(tfs)
@@ -70,7 +73,7 @@ def _idf(tfs):
                 else:
                     idf[word] = 1
 
-    return {k: math.log(doc_cnt/v) for k, v in idf.items()}
+    return {k: math.log(doc_cnt / v) for k, v in idf.items()}
 
 
 def _tf(words):
@@ -82,13 +85,15 @@ def _tf(words):
         else:
             tf[word] = 1
 
-    return {k: v/word_size for k, v in tf.items()}
+    return {k: v / word_size for k, v in tf.items()}
+
 
 class NovelWords(object):
     def __init__(self, title, author, words):
         self.title = title
         self.author = author
         self.words = words
+
 
 def fetch_words(novels):
     result = []
@@ -100,12 +105,13 @@ def fetch_words(novels):
 
     return result
 
+
 def auto(markovs):
-    words=["私は","彼に","あなたを","僕が","今日、","いつか","その日","ある日","昔"]
+    words = ["私は", "彼に", "あなたを", "僕が", "今日、", "いつか", "その日", "ある日", "昔"]
     auto_txt = random.choice(words)
     MAX_TEXTSIZE = 500
 
-    while(len(auto_txt) < MAX_TEXTSIZE):
+    while (len(auto_txt) < MAX_TEXTSIZE):
         src = read()
         words = makeword_from_obj(str(auto_txt), markovs)
 
@@ -120,6 +126,7 @@ def auto(markovs):
 
     return auto_txt
 
+
 # メモ化関数
 def memoize(func):
     cache = {}
@@ -131,6 +138,7 @@ def memoize(func):
             value = func(*args)
             cache[args] = value
             return value
+
     return memoized_function
 
 
@@ -145,6 +153,7 @@ def time(func):
         end = datetime.datetime.today()
         print((func.__name__, end - start))
         return result
+
     return wrapper
 
 
@@ -154,10 +163,10 @@ def download():
     link3 = "http://www.aozora.gr.jp/cards/000035/files/1578_44923.html"
 
     srcs = [textdownload(x) + [x] for x in [
-         link1,
-         link2,
-         link3,
-         ]]
+        link1,
+        link2,
+        link3,
+    ]]
 
     db.make_table()
     for x in srcs:
@@ -177,8 +186,8 @@ def makeword(inp, src):
 
     return wordchain(wakati(inp), [markov2, markov1])
 
-def make_markovs(novels):
 
+def make_markovs(novels):
     markov1 = {}
     markov2 = {}
     markov3 = {}
@@ -188,6 +197,7 @@ def make_markovs(novels):
         markov3.update(pickle.loads(novel.markov3))
 
     return markov3, markov2, markov1
+
 
 def makeword_from_obj(inp, markovs):
     return wordchain(wakati(inp), markovs)
@@ -280,7 +290,7 @@ def genword(txt, count=300):
 
 def genmarkov1(wordlist):
     markov = {}
-    w1=''
+    w1 = ''
     for word in wordlist:
         if w1:
             if (w1,) not in markov:
@@ -318,12 +328,11 @@ def genmarkov3(wordlist):
 
 
 def textdownload(sourceURL):
-
     res = urllib.request.urlopen(sourceURL)
     downloaded_text = res.read()
 
     # 文字コード変換
-    downloaded_text = str(downloaded_text,'shift_jis')
+    downloaded_text = str(downloaded_text, 'shift_jis')
 
     soup = BeautifulSoup(downloaded_text)
 
@@ -381,7 +390,7 @@ def split_list(text, num):
     splited_list = []
 
     for x in range(num):
-        buf = text[(x - 1) * len(text)//num: x * len(text)//num]
+        buf = text[(x - 1) * len(text) // num: x * len(text) // num]
         splited_list.append(buf)
 
     return splited_list
@@ -408,4 +417,3 @@ def pp(foo):
 
 if __name__ == '__main__':
     main()
-
