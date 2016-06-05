@@ -4,6 +4,7 @@
 .idea
 *.iml
 *.bak
+*.dat
 .DS_Store
 data.db
 sql.py
